@@ -50,7 +50,7 @@ blueprint:
     - platform: state
       entity_id: !input 'umidita_bagno'
     - platform: state
-      entity_id: !input 'switch_ventola'
+      entity_id: "{{ switch_ventola }}"
 
   action:
     - variables:
