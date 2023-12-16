@@ -3,13 +3,13 @@ blueprint:
   description: Gestisce la ventola del bagno in base al passaggio di umidità relativa.
   domain: automation
   input:
-    umidita_bagno:
-      name: Sensore Umidità Bagno
+    umidita:
+      name: Sensore Umidità Locale
       selector:
         entity:
           domain: sensor
-    umidita_sala:
-      name: Sensore Umidità Sala
+    umidita_riferimento:
+      name: Sensore Umidità Base
       selector:
         entity:
           domain: sensor
@@ -48,22 +48,23 @@ blueprint:
 
   trigger:
     - platform: state
-      entity_id: "{{ umidita_bagno }}"
+      entity_id: !input umidita 
     - platform: state
-      entity_id: "{{ switch_ventola }}"
+      entity_id: !input switch_ventola 
+      to: 'on'
 
   action:
     - variables:
-        umidita_bagno_val: "{{ states[umidita_bagno].state | float }}"
-        umidita_sala_val: "{{ states[umidita_sala].state | float }}"
+        umidita_val: "{{ states[umidita].state | float }}"
+        umidita_riferimento_val: "{{ states[umidita_riferimento].state | float }}"
         percentuale_a_val: "{{ percentuale_a | float }}"
         percentuale_b_val: "{{ percentuale_b | float }}"
         minuti_timer_val: "{{ minuti_timer }}"
-        soglia_superiore: "{{ umidita_sala_val * (1 + percentuale_a_val / 100) }}"
-        soglia_inferiore: "{{ umidita_sala_val * (1 + percentuale_b_val / 100) }}"
-        umidita_bagno_precedente: "{{ trigger.from_state.state | float }}"
-        trigger_passaggio_a: "{{ umidita_bagno_precedente <= soglia_superiore and umidita_bagno_val > soglia_superiore }}"
-        trigger_passaggio_b: "{{ umidita_bagno_precedente > soglia_inferiore and umidita_bagno_val <= soglia_inferiore }}"
+        soglia_superiore: "{{ umidita_riferimento_val * (1 + percentuale_a_val / 100) }}"
+        soglia_inferiore: "{{ umidita_riferimento_val * (1 + percentuale_b_val / 100) }}"
+        umidita_precedente: "{{ trigger.from_state.state | float }}"
+        trigger_passaggio_a: "{{ umidita_precedente <= soglia_superiore and umidita_val > soglia_superiore }}"
+        trigger_passaggio_b: "{{ umidita_precedente > soglia_inferiore and umidita_val <= soglia_inferiore }}"
 
     - choose:
       - conditions:
