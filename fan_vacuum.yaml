@@ -54,16 +54,16 @@ blueprint:
 
   action:
     - variables:
-        umidita_bagno: "{{ states(umidita_bagno) | float }}"
-        umidita_sala: "{{ states(umidita_sala) | float }}"
-        percentuale_a: "{{ percentuale_a | float }}"
-        percentuale_b: "{{ percentuale_b | float }}"
-        minuti_timer: "{{ minuti_timer }}"
-        soglia_superiore: "{{ umidita_sala * (1 + percentuale_a / 100) }}"
-        soglia_inferiore: "{{ umidita_sala * (1 + percentuale_b / 100) }}"
+        umidita_bagno_val: "{{ states[umidita_bagno].state | float }}"
+        umidita_sala_val: "{{ states[umidita_sala].state | float }}"
+        percentuale_a_val: "{{ percentuale_a | float }}"
+        percentuale_b_val: "{{ percentuale_b | float }}"
+        minuti_timer_val: "{{ minuti_timer }}"
+        soglia_superiore: "{{ umidita_sala_val * (1 + percentuale_a_val / 100) }}"
+        soglia_inferiore: "{{ umidita_sala_val * (1 + percentuale_b_val / 100) }}"
         umidita_bagno_precedente: "{{ trigger.from_state.state | float }}"
-        trigger_passaggio_a: "{{ umidita_bagno_precedente <= soglia_superiore and umidita_bagno > soglia_superiore }}"
-        trigger_passaggio_b: "{{ umidita_bagno_precedente > soglia_inferiore and umidita_bagno <= soglia_inferiore }}"
+        trigger_passaggio_a: "{{ umidita_bagno_precedente <= soglia_superiore and umidita_bagno_val > soglia_superiore }}"
+        trigger_passaggio_b: "{{ umidita_bagno_precedente > soglia_inferiore and umidita_bagno_val <= soglia_inferiore }}"
 
     - choose:
       - conditions:
@@ -92,7 +92,7 @@ blueprint:
             state: 'on'
         sequence:
           - delay: 
-              minutes: "{{ minuti_timer }}"
+              minutes: "{{ minuti_timer_val }}"
           - condition: template
             value_template: "{{ is_state('sensore_booleano', 'off') }}"
           - service: switch.turn_off
