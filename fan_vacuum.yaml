@@ -8,30 +8,37 @@ blueprint:
       selector:
         entity:
           domain: sensor
+          multiple: false
     umidita_riferimento:
       name: Sensore Umidità Base
       selector:
         entity:
           domain: sensor
+          multiple: false
     percentuale_a:
       name: Percentuale A
       selector:
         number:
           min: 0
           max: 100
+          step: 1.0
           unit_of_measurement: '%'
+          mode: slider
     percentuale_b:
       name: Percentuale B
       selector:
         number:
           min: 0
           max: 100
+          step: 1.0
           unit_of_measurement: '%'
+          mode: slider
     switch_ventola:
       name: Switch Ventola
       selector:
         entity:
           domain: switch
+          multiple: false
     sensore_booleano:
       name: Sensore Booleano
       selector:
@@ -44,7 +51,9 @@ blueprint:
         number:
           min: 1
           max: 60
+          step: 1.0
           unit_of_measurement: 'minuti'
+          mode: slider
 
   trigger:
     - platform: state
