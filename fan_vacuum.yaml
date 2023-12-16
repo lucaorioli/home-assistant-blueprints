@@ -1,5 +1,5 @@
 blueprint:
-  name: Controllo Umidità con Ventola (Correzione Trigger)
+  name: Controllo Umidità con Ventola (Corretto)
   description: Gestisce la ventola del bagno in base al passaggio di umidità relativa.
   domain: automation
   input:
