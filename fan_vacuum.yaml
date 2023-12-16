@@ -1,5 +1,5 @@
 blueprint:
-  name: Controllo Umidità con Ventola (Rivisto)
+  name: Controllo Umidità con Ventola (Correzione Trigger)
   description: Gestisce la ventola del bagno in base al passaggio di umidità relativa.
   domain: automation
   input:
@@ -49,11 +49,13 @@ blueprint:
   trigger:
     - platform: state
       entity_id: !input 'umidita_bagno'
+    - platform: state
+      entity_id: !input 'switch_ventola'
 
   action:
     - variables:
-        umidita_bagno: "{{ states[umidita_bagno].state | float }}"
-        umidita_sala: "{{ states[umidita_sala].state | float }}"
+        umidita_bagno: "{{ states(umidita_bagno) | float }}"
+        umidita_sala: "{{ states(umidita_sala) | float }}"
         percentuale_a: "{{ percentuale_a | float }}"
         percentuale_b: "{{ percentuale_b | float }}"
         minuti_timer: "{{ minuti_timer }}"
