@@ -1,0 +1,107 @@
+blueprint:
+  name: Controllo Umidità con Ventola
+  description: Gestisce la ventola del bagno in base al passaggio di umidità relativa.
+  domain: automation
+  input:
+    umidita_bagno:
+      name: Sensore Umidità Bagno
+      selector:
+        entity:
+          domain: sensor
+    umidita_sala:
+      name: Sensore Umidità Base
+      selector:
+        entity:
+          domain: sensor
+    percentuale_a:
+      name: Percentuale A
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: '%'
+    percentuale_b:
+      name: Percentuale B
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: '%'
+    switch_ventola:
+      name: Switch Ventola
+      selector:
+        entity:
+          domain: switch
+    sensore_booleano:
+      name: Sensore Booleano
+      selector:
+        entity:
+          domain: input_boolean
+    minuti_timer:
+      name: Minuti Timer
+      selector:
+        number:
+          min: 0
+          max: 30
+
+  trigger:
+    - platform: state
+      entity_id: !input 'umidita_bagno'
+
+  action:
+    - variables:
+        umidita_bagno: "{{ states(umidita_bagno)|float }}"
+        umidita_sala: "{{ states(umidita_sala)|float }}"
+        percentuale_a: "{{ percentuale_a|float }}"
+        percentuale_b: "{{ percentuale_b|float }}"
+        minuti_timer: "{{ states(minuti_timer)|int }}"
+        soglia_superiore: "{{ umidita_sala * (1 + percentuale_a / 100) }}"
+        soglia_inferiore: "{{ umidita_sala * (1 + percentuale_b / 100) }}"
+        umidita_bagno_precedente: "{{ trigger.from_state.state | float }}"
+        trigger_passaggio_a: "{{ umidita_bagno_precedente <= soglia_superiore and umidita_bagno > soglia_superiore }}"
+        trigger_passaggio_b: "{{ umidita_bagno_precedente > soglia_inferiore and umidita_bagno <= soglia_inferiore }}"
+
+    - choose:
+      # Condizione 1: Attivazione in base al passaggio di umidità
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_passaggio_a }}"
+        sequence:
+          - service: input_boolean.turn_on
+            entity_id: !input 'sensore_booleano'
+          - service: switch.turn_on
+            entity_id: !input 'switch_ventola'
+      # Condizione 2: Spegnimento in base al passaggio di umidità
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_passaggio_b }}"
+        sequence:
+          - service: input_boolean.turn_off
+            entity_id: !input 'sensore_booleano'
+          - service: switch.turn_off
+            entity_id: !input 'switch_ventola'
+
+      # Condizione 3: Timer se attivato manualmente
+      - conditions:
+          - condition: state
+            entity_id: !input 'switch_ventola'
+            state: 'on'
+        sequence:
+          - delay: 
+              minutes: "{{ minuti_timer }}"
+          - condition: template
+            value_template: "{{ is_state(sensore_booleano, 'off') }}"
+          - service: switch.turn_off
+            entity_id: !input 'switch_ventola'
+
+      # Condizione 4: Spegnimento manuale
+      - conditions:
+          - condition: state
+            entity_id: !input 'switch_ventola'
+            state: 'off'
+          - condition: state
+            entity_id: !input 'sensore_booleano'
+            state: 'on'
+        sequence:
+          - service: input_boolean.turn_off
+            entity_id: !input 'sensore_booleano'
