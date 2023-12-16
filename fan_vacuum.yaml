@@ -48,7 +48,7 @@ blueprint:
 
   trigger:
     - platform: state
-      entity_id: !input 'umidita_bagno'
+      entity_id: "{{ umidita_bagno }}"
     - platform: state
       entity_id: "{{ switch_ventola }}"
 
