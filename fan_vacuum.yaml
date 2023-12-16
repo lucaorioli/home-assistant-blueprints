@@ -56,10 +56,5 @@ blueprint:
           mode: slider
 
   trigger:
-    - platform: state
-      entity_id: !input umidita 
-    - platform: state
-      entity_id: !input switch_ventola 
-      to: 'on'
 
   action:
