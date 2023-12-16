@@ -1,5 +1,5 @@
 blueprint:
-  name: Controllo Umidità con Ventola
+  name: Controllo Umidità con Ventola (Con Timer Numerico)
   description: Gestisce la ventola del bagno in base al passaggio di umidità relativa.
   domain: automation
   input:
@@ -9,7 +9,7 @@ blueprint:
         entity:
           domain: sensor
     umidita_sala:
-      name: Sensore Umidità Base
+      name: Sensore Umidità Sala
       selector:
         entity:
           domain: sensor
@@ -39,10 +39,12 @@ blueprint:
           domain: input_boolean
     minuti_timer:
       name: Minuti Timer
+      description: Numero di minuti per cui la ventola rimarrà accesa se attivata manualmente.
       selector:
         number:
-          min: 0
+          min: 1
           max: 30
+          unit_of_measurement: 'minuti'
 
   trigger:
     - platform: state
@@ -54,7 +56,7 @@ blueprint:
         umidita_sala: "{{ states(umidita_sala)|float }}"
         percentuale_a: "{{ percentuale_a|float }}"
         percentuale_b: "{{ percentuale_b|float }}"
-        minuti_timer: "{{ states(minuti_timer)|int }}"
+        minuti_timer: "{{ minuti_timer }}"
         soglia_superiore: "{{ umidita_sala * (1 + percentuale_a / 100) }}"
         soglia_inferiore: "{{ umidita_sala * (1 + percentuale_b / 100) }}"
         umidita_bagno_precedente: "{{ trigger.from_state.state | float }}"
@@ -103,5 +105,4 @@ blueprint:
             entity_id: !input 'sensore_booleano'
             state: 'on'
         sequence:
-          - service: input_boolean.turn_off
-            entity_id: !input 'sensore_booleano'
+          - service: input_boolean.turn
